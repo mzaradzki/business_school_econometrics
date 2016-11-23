@@ -54,13 +54,17 @@
                     for (var i3=0; i3<this.SAR0().XY.length; i3++) {
                         datapoints3.push( {x:this.SAR0().XY[i3][1], y:this.SAR0().regfun(this.SAR0().XY[i3][0]), r:5} );
                     };
-                    return { // data
-                        datasets: [{
-                            label: 'error',
-                            data: datapoints3,
-                            backgroundColor: "#FF6384",
-                            hoverBackgroundColor: "#FF6384",
-                        }],
+                    return {
+                        type:'bubble',
+                        data: { // data
+                            datasets: [{
+                                label: 'error',
+                                data: datapoints3,
+                                backgroundColor: "#FF6384",
+                                hoverBackgroundColor: "#FF6384",
+                            }],
+                        },
+                        //options: { observeChanges: true, throttle: 1000 },
                     };
                 }, this);
                 //
@@ -70,13 +74,17 @@
                         var sar = simAndReg(this.Xs(), this.intercept(), this.beta(), this.errstd());
                         datapoints4.push( {x:sar.regcoeff.m, y:sar.regcoeff.b, r:3} );
                     }
-                    return { // data
+                    return {
+                        type:'bubble',
+                        data: { // data
                             datasets: [{
                                 label: 'coefficients',
                                 data: datapoints4,
                                 backgroundColor: "#FF6384",
                                 hoverBackgroundColor: "#FF6384",
                             }],
+                        },
+                        //options: { observeChanges: true, throttle: 1000 },
                     };
                 }, this);
                 //
@@ -93,7 +101,9 @@
                         labels5.push( 0.5*(bins5[i5].x0+bins5[i5].x1) );
                         data5.push( bins5[i5].length/arr5.length );
                     }
-                    return { // data
+                    return {
+                        type:'bar',
+                        data: { // data
                             labels: labels5,
                             datasets: [{
                                 label: 'forecasts',
@@ -101,6 +111,8 @@
                                 backgroundColor: "#FF6384",
                                 hoverBackgroundColor: "#FF6384",
                             }],
+                        },
+                        //options: { observeChanges: true, throttle: 1000 },
                     };
                 }, this);
             }
@@ -215,7 +227,9 @@
                 <div class="panel-body">
                     <!--<div id="plotFit" class="shiny-plot-output" style="width:100%; height:400px"></div>-->
                     <!--<canvas id="plotFit"></canvas>-->
-                    <canvas id="plotFit" data-bind="chart:{type:'bubble', data:DynamicPlotFitData(), options:{observeChanges:true, throttle:1000}}"></canvas>
+                    
+                    <!--<div data-bind="content: DynamicPlotFitData"><canvas id="plotFit" data-bind="chart: DynamicPlotFitData()"></canvas></div>-->
+                    <div data-bind='component: { name: "ChartWrapper", params: DynamicPlotFitData, }'></div>
                     <!--<canvas id="some-dynamic-doughnut-chart"
                     data-bind="chart: { type: 'doughnut', data: DynamicDoughnutData(), options: { observeChanges: true, throttle: 1000 } }"></canvas>-->
                 </div>
@@ -234,7 +248,8 @@
                 <div class="panel-body">
                     <!--<div id="plotBoxes" class="shiny-plot-output" style="height:800px"></div>-->
                     <!--<canvas id="plotBoxes"></canvas>-->
-                    <canvas id="plotBoxes" data-bind="chart:{type:'bubble', data:DynamicPlotBoxData(), options:{observeChanges:true, throttle:1000}}"></canvas>
+                    <!--<canvas id="plotBoxes" data-bind="chart:{type:'bubble', data:DynamicPlotBoxData(), options:{observeChanges:true, throttle:1000}}"></canvas>-->
+                    <div data-bind='component: { name: "ChartWrapper", params: DynamicPlotBoxData, }'></div>
                 </div>
             </div>
             
@@ -269,7 +284,8 @@
                 <div class="panel-body">
                     <!--<div class="shiny-plot-output" style="width:100%; height:400px"></div>-->
                     <!--<canvas id="plotHistForecast"></canvas>-->
-                    <canvas id="plotHistForecast" data-bind="chart:{type:'bar', data:DynamicHistForecastData(), options:{observeChanges:true, throttle:1000}}"></canvas>
+                    <!--<canvas id="plotHistForecast" data-bind="chart:{type:'bar', data:DynamicHistForecastData(), options:{observeChanges:true, throttle:1000}}"></canvas>-->
+                    <div data-bind='component: { name: "ChartWrapper", params: DynamicHistForecastData, }'></div>
                     <!--<strong data-bind="text: DynamicHistForecastData().labels"></strong>-->
                 </div>
                 <div class="panel-footer">This is the so-called bootstraping method</div>
@@ -277,59 +293,18 @@
         
         </div></div>
         </div>
-
-        <!--<script>
-            var draw4 = function() {
-                var ctx4 = document.getElementById("plotBoxes").getContext("2d");
-                var datapoints4 = [];
-                for (var i4=0; i4<100; i4++) {
-                    var sar = simAndReg(Xs, intercept, beta, errstd);
-                    datapoints4.push( {x:sar.regcoeff.m, y:sar.regcoeff.b, r:3} );
-                }
-                var myChart4 = new Chart(ctx4, {
-                    type: 'bubble',
-                    data: {
-                        datasets: [{
-                            label: 'coefficients',
-                            data: datapoints4,
-                            backgroundColor: "#FF6384",
-                            hoverBackgroundColor: "#FF6384",
-                        }],
-                    },
-                });
-            }
-        </script>-->
-        <!--<script>
-            var draw5 = function() {
-                var newX = 2.5;
-                var arr5 = [];
-                for (var i5=0; i5<100; i5++) {
-                    var sar = simAndReg(Xs, intercept, beta, errstd);
-                    arr5.push( sar.regfun(newX) );
-                }
-                var bins5 = d3.histogram().thresholds(9)(arr5); //.domain([0,1])
-                var labels5 = [];
-                var data5 = [];
-                for (var i5=0; i5<bins5.length; i5++) {
-                    labels5.push( 0.5*(bins5[i5].x0+bins5[i5].x1) );
-                    data5.push( bins5[i5].length/arr5.length );
-                }
-                var ctx5 = document.getElementById("plotHistForecast").getContext("2d");
-                var myChart5 = new Chart(ctx5, {
-                    type: 'bar',
-                    data: {
-                        labels: labels5,
-                        datasets: [{
-                            label: 'forecasts',
-                            data: data5,
-                            backgroundColor: "#FF6384",
-                            hoverBackgroundColor: "#FF6384",
-                        }],
-                    },
-                });
-            }
-        </script>-->
+        
         <script>
+            //
+            ko.components.register('ChartWrapper', {
+                viewModel: function(params) {
+                    //console.log('bbbbbbbbb');
+                    this.type = ko.observable(params && params.type || '');
+                    this.data = ko.observable(params && params.data || null);
+                    this.options = ko.observable(params && params.options || null);
+                },
+                template: '<canvas data-bind="chart:{type:type, data:data}"></canvas>'
+            });
             // Activates knockout.js
             var koAVM = new AppViewModel();
             ko.applyBindings(koAVM);

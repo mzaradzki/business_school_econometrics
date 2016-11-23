@@ -59,6 +59,7 @@
     };
 
     var scanForObservablesIn = function(model, subscribables){
+        //console.log(model);
         for (var parameter in model)
         {
             var typeOfData = getType(model[parameter]);
@@ -88,6 +89,7 @@
             var chartBinding = allBindings.chart;
             var activeChart;
             var chartData;
+            //console.log(allBindingsAccessor());
 
             var createChart = function() {
                 var chartType = ko.unwrap(chartBinding.type);
@@ -111,6 +113,7 @@
 
             var subscribeToChanges = function() {
                 var throttleAmount = ko.unwrap(chartBinding.options.throttle) || 100;
+                //console.log(chartBinding.data);
                 var dataSubscribables = getSubscribables(chartBinding.data);
                 console.log("found obs", dataSubscribables);
 
@@ -121,8 +124,10 @@
 
             createChart();
 
-            if(chartBinding.options && chartBinding.options.observeChanges)
-            { subscribeToChanges(); }
+            if(chartBinding.options && chartBinding.options.observeChanges) {
+                //console.log('a');
+                subscribeToChanges();
+            }
         }
     };
 
