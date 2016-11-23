@@ -14,6 +14,8 @@
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.1/simple_statistics.min.js"></script>
 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.4.0/d3.min.js"></script>
+
         <!--<link rel="stylesheet" type="text/css" href="shared/shiny.css"/>
         
         <link rel="stylesheet" href="shared/slider/css/jquery.slider.min.css">
@@ -191,7 +193,8 @@
             <div class="panel panel-info">
                 <div class="panel-heading">Histogram of simulated forecasts</div>
                 <div class="panel-body">
-                    <div id="plotHistForecast" class="shiny-plot-output" style="width:100%; height:400px"></div>
+                    <!--<div class="shiny-plot-output" style="width:100%; height:400px"></div>-->
+                    <canvas id="plotHistForecast"></canvas>
                 </div>
                 <div class="panel-footer">This is the so-called bootstraping method</div>
             </div>
@@ -201,16 +204,16 @@
 
         <script>
             var ctx3 = document.getElementById("plotFit").getContext("2d");
-            var datapoints = [];
-            for (var i=0; i<SAR0.XY.length; i++) {
-                datapoints.push( {x:SAR0.XY[i][1], y:SAR0.regfun(SAR0.XY[i][0]), r:5} );
+            var datapoints3 = [];
+            for (var i3=0; i3<SAR0.XY.length; i3++) {
+                datapoints3.push( {x:SAR0.XY[i3][1], y:SAR0.regfun(SAR0.XY[i3][0]), r:5} );
             }
             var myChart3 = new Chart(ctx3, {
                 type: 'bubble',
                 data: {
                     datasets: [{
                         label: 'error',
-                        data: datapoints,
+                        data: datapoints3,
                         backgroundColor: "#FF6384",
                         hoverBackgroundColor: "#FF6384",
                     }],
@@ -219,17 +222,45 @@
         </script>
         <script>
             var ctx4 = document.getElementById("plotBoxes").getContext("2d");
-            var datapoints2 = [];
-            for (var k=0; k<100; k++) {
+            var datapoints4 = [];
+            for (var i4=0; i4<100; i4++) {
                 var sar = simAndReg();
-                datapoints2.push( {x:sar.regcoeff.m, y:sar.regcoeff.b, r:3} );
+                datapoints4.push( {x:sar.regcoeff.m, y:sar.regcoeff.b, r:3} );
             }
             var myChart4 = new Chart(ctx4, {
                 type: 'bubble',
                 data: {
                     datasets: [{
                         label: 'coefficients',
-                        data: datapoints2,
+                        data: datapoints4,
+                        backgroundColor: "#FF6384",
+                        hoverBackgroundColor: "#FF6384",
+                    }],
+                },
+            });
+        </script>
+        <script>
+            var newX = 10;
+            var arr5 = [];
+            for (var i5=0; i5<100; i5++) {
+                var sar = simAndReg();
+                arr5.push( sar.regfun(newX) );
+            }
+            var bins5 = d3.histogram().thresholds(9)(arr5); //.domain([0,1])
+            var labels5 = [];
+            var data5 = [];
+            for (var i5=0; i5<bins5.length; i5++) {
+                labels5.push( 0.5*(bins5[i5].x0+bins5[i5].x1) );
+                data5.push( bins5[i5].length/arr5.length );
+            }
+            var ctx5 = document.getElementById("plotHistForecast").getContext("2d");
+            var myChart5 = new Chart(ctx5, {
+                type: 'bar',
+                data: {
+                    labels: labels5,
+                    datasets: [{
+                        label: 'forecasts',
+                        data: data5,
                         backgroundColor: "#FF6384",
                         hoverBackgroundColor: "#FF6384",
                     }],
