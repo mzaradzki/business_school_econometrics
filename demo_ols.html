@@ -12,6 +12,7 @@
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.bundle.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.1/simple_statistics.min.js"></script>
 
         <!--<link rel="stylesheet" type="text/css" href="shared/shiny.css"/>
         
@@ -22,6 +23,36 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.2.0/cosmo/bootstrap.min.css">
         <!--<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">-->
         <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>-->
+
+        <script>
+            var gaussian = function() {
+                // Box Muller method
+                var u = 1 - Math.random(); // Subtraction to flip [0, 1) to (0, 1].
+                var v = 1 - Math.random();
+                var g = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+                return g;
+            }
+            var intercept = -6;
+            var beta = 3;
+            var nbobs = 25;
+            var errstd = .75;
+            var Xs = [];
+            for (i=0; i<nbobs; i++) {
+                var x = gaussian();
+                Xs.push(x);
+            }
+            var simAndReg = function() {
+                var M = [];
+                for (i=0; i<nbobs; i++) {
+                    var y = intercept + beta*Xs[i] + errstd*gaussian();
+                    M.push([Xs[i], y]);
+                }
+                var regcoeff = ss.linearRegression(M);
+                var regfun = ss.linearRegressionLine(regcoeff);
+                return {XY:M, regcoeff:regcoeff, regfun:regfun};
+            }
+            var SAR0 = simAndReg();
+        </script>
     
     </head>
  
@@ -110,7 +141,8 @@
             <div class="panel panel-info">
                 <div class="panel-heading">Observed values against fitted values</div>
                 <div class="panel-body">
-                    <div id="plotFit" class="shiny-plot-output" style="width:100%; height:400px"></div>
+                    <!--<div id="plotFit" class="shiny-plot-output" style="width:100%; height:400px"></div>-->
+                    <canvas id="plotFit"></canvas>
                 </div>
                 <div class="panel-footer">No specific pattern in the errors</div>
             </div>
@@ -125,7 +157,8 @@
             <div class="panel panel-info">
                 <div class="panel-heading">Summary of (100x) repeated OLS experiments</div>
                 <div class="panel-body">
-                    <div id="plotBoxes" class="shiny-plot-output" style="height:800px"></div>
+                    <!--<div id="plotBoxes" class="shiny-plot-output" style="height:800px"></div>-->
+                    <canvas id="plotBoxes"></canvas>
                 </div>
             </div>
             
@@ -165,6 +198,44 @@
         
         </div></div>
         </div>
+
+        <script>
+            var ctx3 = document.getElementById("plotFit").getContext("2d");
+            var datapoints = [];
+            for (var i=0; i<SAR0.XY.length; i++) {
+                datapoints.push( {x:SAR0.XY[i][1], y:SAR0.regfun(SAR0.XY[i][0]), r:5} );
+            }
+            var myChart3 = new Chart(ctx3, {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        label: 'error',
+                        data: datapoints,
+                        backgroundColor: "#FF6384",
+                        hoverBackgroundColor: "#FF6384",
+                    }],
+                },
+            });
+        </script>
+        <script>
+            var ctx4 = document.getElementById("plotBoxes").getContext("2d");
+            var datapoints2 = [];
+            for (var k=0; k<100; k++) {
+                var sar = simAndReg();
+                datapoints2.push( {x:sar.regcoeff.m, y:sar.regcoeff.b, r:3} );
+            }
+            var myChart4 = new Chart(ctx4, {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        label: 'coefficients',
+                        data: datapoints2,
+                        backgroundColor: "#FF6384",
+                        hoverBackgroundColor: "#FF6384",
+                    }],
+                },
+            });
+        </script>
     </body>
 
 </html>
