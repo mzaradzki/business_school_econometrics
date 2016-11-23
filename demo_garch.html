@@ -1,157 +1,168 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
-  <head>
-    <script src="shared/jquery.js" type="text/javascript"></script>
-    <script src="shared/shiny.js" type="text/javascript"></script>
-    <!-- <link rel="stylesheet" type="text/css" href="shared/shiny.css"/> -->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <meta name="description" content="GARCH Modelling of Regression Residuals">
+        <meta name="author" content="m.zaradzki">
+
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.bundle.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.js"></script>
+
+        <!-- <script src="shared/shiny.js" type="text/javascript"></script> -->
+        <!-- <link rel="stylesheet" type="text/css" href="shared/shiny.css"/> -->
+        
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.2.0/cosmo/bootstrap.min.css">
+        <!--<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">-->
+        <!-- <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script> -->
     
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootswatch/3.2.0/cosmo/bootstrap.min.css">
-    <!--<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">-->
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-  
-  </head>
+    </head>
  
-  <body>
-  
-    <div class="container">
-    
-      <div class="page-header">
-        <h1>GARCH Modelling of Regression Residuals</h1>
-        <h1><small>Mathieu ZARADZKI - EDHEC 2014-2015</small></h1>
-      </div>
-    
-      <div class="panel panel-success">
-        <div class="panel-heading">Purpose of this demo</div>
-        <div class="panel-body">
-          Here we illustrate how the OLS framework can be used to test important financial theories about the Stock Market, namely the CAPM extension proposed by Fama-French.<br>
-          The (mild) difficulty is that the result of an OLS procedure, the Linear Regression Estimates, are random variables.<br>
-          However, UNDER GOOD CONDITIONS, the values returned by most software (e.g. Excel, Matlab) are UNBIASED estimates of the true model AND their distribution law uncertain (STD DEV >0) is easy to model.<br>
-          This allows us to provide confidence interval for our model quantitative results.<br>
-        </div>
-      </div>
-      
-      <div class="panel panel-info">
-        <div class="panel-heading">Key notions to remember</div>
-        <div class="panel-body">
-          <span class="label label-success">Heteroscedasticity</span>
-          <span class="label label-success">Jarque Berra</span>
-          <span class="label label-success">QQ plot</span>
-          <span class="label label-success">GARCH</span>
-        </div>
-      </div>
-      
-      <div class="panel panel-info">
-        <div class="panel-heading">Experiment setup</div>
-        <div class="panel-body">
+    <body>
+        <div class="container">
+        <div class="row"><div class="col-md-10 col-md-offset-1">
         
-          <div class="row">
-            <div class="col-md-3">
-              <label>SPX sub-sector:</label><br/> 
-              <select name="sector" class="form-control">
-                <option value="XLV">Health</option>
-                <option value="XLF">Financial</option>
-                <option value="XLK">Technology</option>
-                <option value="XLI">Industry</option>
-                <option value="XLY">Consumer Discr.</option>
-                <option value="XLB">Materials</option>
-              </select> 
-            </div>
-          </div>
         
-          <!--<div class="row">
-            <div class="col-md-3">
-              <label>Error Standard Deviation:</label><br /> 
-              <input type="number" name="stdeviation" class="form-control" value="10" min="0" max="100" />
+            <div class="page-header">
+                <h1>GARCH Modelling of Regression Residuals</h1>
+                <h1><small>Mathieu ZARADZKI - 2014-2015</small></h1>
             </div>
-          </div>-->
-          
-        </div>
-      </div>
-     
-      <div class="panel panel-info">
-        <div class="panel-heading">Linear regression output</div>
-        <div class="panel-body">
-          <pre id="summary" class="shiny-text-output"></pre>
-        </div>
-      </div>
-      
-      <div class="panel panel-info">
-        <div class="panel-heading">Observed values against fitted values</div>
-        <div class="panel-body">
-          <div id="plotFit" class="shiny-plot-output" style="width:100%; height:400px"></div>
-        </div>
-      </div>
-      
-      <div class="panel panel-info">
-        <div class="panel-heading">Durbin Watson Statistic</div>
-        <div class="panel-body">
-          <pre id="durbinwatson" class="shiny-text-output"></pre>
-        </div>
-        <div class="panel-footer">Remember the DW lies in the [0, 2] and 1-DW/2 is an auto-correlation proxy</div>
-      </div>
-      
-      <!--<div class="panel panel-default">
-        <div class="panel-heading">Skewness (Agostino) Statistic</div>
-        <div class="panel-body">
-          <pre id="agostinoskewness" class="shiny-text-output"></pre>
-        </div>
-      </div>-->
-      
-      <div class="panel panel-info">
-        <div class="panel-heading">Jarque Berra Normality</div>
-        <div class="panel-body">
-          <pre id="jarqueberranormality" class="shiny-text-output"></pre>
-        </div>
-      </div>
-      
-      <div class="panel panel-info">
-        <div class="panel-heading">Residual term analysis</div>
-        <div class="panel-body">
-          <div id="plotError" class="shiny-plot-output" style="width:100%; height:400px"></div>
-        </div>
-        <div class="panel-footer">Heteroskedasdicity is fairly evident on the LHS chart</div>
-      </div>
-      
-      
-      <div class="panel panel-info">
-        <div class="panel-heading">GARCH setup</div>
-        <div class="panel-body">
-          
-          <div class="row">
-            <div class="col-md-3">
-              <label>P order:</label><br /> 
-              <input type="number" name="garchP" class="form-control" value="1" min="0" max="5" />
-            </div>
-          </div>
         
-          <div class="row">
-            <div class="col-md-3">
-              <label>Q order:</label><br /> 
-              <input type="number" name="garchQ" class="form-control" value="1" min="0" max="5" />
+            <div class="panel panel-success">
+                <div class="panel-heading">Purpose of this demo</div>
+                <div class="panel-body">
+                    Here we illustrate how the OLS framework can be used to test important financial theories about the Stock Market, namely the CAPM extension proposed by Fama-French.<br>
+                    The (mild) difficulty is that the result of an OLS procedure, the Linear Regression Estimates, are random variables.<br>
+                    However, UNDER GOOD CONDITIONS, the values returned by most software (e.g. Excel, Matlab) are UNBIASED estimates of the true model AND their distribution law uncertain (STD DEV >0) is easy to model.<br>
+                    This allows us to provide confidence interval for our model quantitative results.<br>
+                </div>
             </div>
-          </div>
-          
+            
+            <div class="panel panel-info">
+                <div class="panel-heading">Key notions to remember</div>
+                <div class="panel-body">
+                    <span class="label label-success">Heteroscedasticity</span>
+                    <span class="label label-success">Jarque Berra</span>
+                    <span class="label label-success">QQ plot</span>
+                    <span class="label label-success">GARCH</span>
+                </div>
+            </div>
+            
+            <div class="panel panel-info">
+                <div class="panel-heading">Experiment setup</div>
+                <div class="panel-body">
+                
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label>SPX sub-sector:</label><br/> 
+                            <select name="sector" class="form-control">
+                                <option value="XLV">Health</option>
+                                <option value="XLF">Financial</option>
+                                <option value="XLK">Technology</option>
+                                <option value="XLI">Industry</option>
+                                <option value="XLY">Consumer Discr.</option>
+                                <option value="XLB">Materials</option>
+                            </select> 
+                        </div>
+                    </div>
+                
+                    <!--<div class="row">
+                        <div class="col-md-3">
+                            <label>Error Standard Deviation:</label><br /> 
+                            <input type="number" name="stdeviation" class="form-control" value="10" min="0" max="100" />
+                        </div>
+                    </div>-->
+                    
+                </div>
+            </div>
+         
+            <div class="panel panel-info">
+                <div class="panel-heading">Linear regression output</div>
+                <div class="panel-body">
+                    <pre id="summary" class="shiny-text-output"></pre>
+                </div>
+            </div>
+            
+            <div class="panel panel-info">
+                <div class="panel-heading">Observed values against fitted values</div>
+                <div class="panel-body">
+                    <div id="plotFit" class="shiny-plot-output" style="width:100%; height:400px"></div>
+                </div>
+            </div>
+            
+            <div class="panel panel-info">
+                <div class="panel-heading">Durbin Watson Statistic</div>
+                <div class="panel-body">
+                    <pre id="durbinwatson" class="shiny-text-output"></pre>
+                </div>
+                <div class="panel-footer">Remember the DW lies in the [0, 2] and 1-DW/2 is an auto-correlation proxy</div>
+            </div>
+            
+            <!--<div class="panel panel-default">
+                <div class="panel-heading">Skewness (Agostino) Statistic</div>
+                <div class="panel-body">
+                    <pre id="agostinoskewness" class="shiny-text-output"></pre>
+                </div>
+            </div>-->
+            
+            <div class="panel panel-info">
+                <div class="panel-heading">Jarque Berra Normality</div>
+                <div class="panel-body">
+                    <pre id="jarqueberranormality" class="shiny-text-output"></pre>
+                </div>
+            </div>
+            
+            <div class="panel panel-info">
+                <div class="panel-heading">Residual term analysis</div>
+                <div class="panel-body">
+                    <div id="plotError" class="shiny-plot-output" style="width:100%; height:400px"></div>
+                </div>
+                <div class="panel-footer">Heteroskedasdicity is fairly evident on the LHS chart</div>
+            </div>
+            
+            
+            <div class="panel panel-info">
+                <div class="panel-heading">GARCH setup</div>
+                <div class="panel-body">
+                    
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label>P order:</label><br /> 
+                            <input type="number" name="garchP" class="form-control" value="1" min="0" max="5" />
+                        </div>
+                    </div>
+                
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label>Q order:</label><br /> 
+                            <input type="number" name="garchQ" class="form-control" value="1" min="0" max="5" />
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div class="panel panel-info">
+                <div class="panel-heading">GARCH residual term analysis</div>
+                <div class="panel-body">
+                    <div id="plotGARCHError" class="shiny-plot-output" style="width:100%; height:400px"></div>
+                </div>
+                <div class="panel-footer">The residual magnitude should overlay well with the GARCH volatility serie. The QQ-plot should be closer to the identity line.</div>
+            </div>
+            
+            <!--<div class="panel panel-default">
+                <div class="panel-heading">Scaled Error term using VIX</div>
+                <div class="panel-body">
+                    <div id="plotScaledError" class="shiny-plot-output" style="width:100%; height:400px"></div>
+                </div>
+            </div>-->
+            
+        
+        </div></div>
         </div>
-      </div>
-      
-      <div class="panel panel-info">
-        <div class="panel-heading">GARCH residual term analysis</div>
-        <div class="panel-body">
-          <div id="plotGARCHError" class="shiny-plot-output" style="width:100%; height:400px"></div>
-        </div>
-        <div class="panel-footer">The residual magnitude should overlay well with the GARCH volatility serie. The QQ-plot should be closer to the identity line.</div>
-      </div>
-      
-      <!--<div class="panel panel-default">
-        <div class="panel-heading">Scaled Error term using VIX</div>
-        <div class="panel-body">
-          <div id="plotScaledError" class="shiny-plot-output" style="width:100%; height:400px"></div>
-        </div>
-      </div>-->
-      
-      
-      
-    </div>
-  </body>
-
+    </body>
 </html>
