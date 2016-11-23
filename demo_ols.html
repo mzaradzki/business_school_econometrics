@@ -10,22 +10,101 @@
         <meta name="author" content="m.zaradzki">
 
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.bundle.min.js"></script>
+
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.5.3/jstat.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.1/simple_statistics.min.js"></script>
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.4.0/d3.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.bundle.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.4.0/d3.min.js"></script>
 
         <!--<link rel="stylesheet" type="text/css" href="shared/shiny.css"/>
-        
         <link rel="stylesheet" href="shared/slider/css/jquery.slider.min.css">
-        
         <script src="shared/slider/js/jquery.slider.min.js" type="text/javascript"></script>-->
         
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.2.0/cosmo/bootstrap.min.css">
         <!--<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">-->
         <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>-->
 
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script>
+        <!-- see documentation : https://github.com/grofit/knockout.chart -->
+        <script type="text/javascript" src="js/knockout.chart.js"></script>
+
+        <script>
+            function AppViewModel() {
+                this.intercept = ko.observable(-3);
+                this.beta = ko.observable(3);
+                this.nbobs = ko.observable(25);
+                this.errstd = ko.observable(1);
+                this.newX = ko.observable(3);
+                //
+                this.Xs = ko.computed(function() {
+                    var Xs = [];
+                    for (var i=0; i<this.nbobs(); i++) {
+                        Xs.push( gaussian() );
+                    }
+                    return Xs;
+                }, this);
+                //
+                this.SAR0 = ko.computed(function() {
+                    return simAndReg(this.Xs(), this.intercept(), this.beta(), this.errstd());
+                }, this);
+                this.DynamicPlotFitData = ko.computed(function() {
+                    var datapoints3 = [];
+                    for (var i3=0; i3<this.SAR0().XY.length; i3++) {
+                        datapoints3.push( {x:this.SAR0().XY[i3][1], y:this.SAR0().regfun(this.SAR0().XY[i3][0]), r:5} );
+                    };
+                    return { // data
+                        datasets: [{
+                            label: 'error',
+                            data: datapoints3,
+                            backgroundColor: "#FF6384",
+                            hoverBackgroundColor: "#FF6384",
+                        }],
+                    };
+                }, this);
+                //
+                this.DynamicPlotBoxData = ko.computed(function () {
+                    var datapoints4 = [];
+                    for (var i4=0; i4<100; i4++) {
+                        var sar = simAndReg(this.Xs(), this.intercept(), this.beta(), this.errstd());
+                        datapoints4.push( {x:sar.regcoeff.m, y:sar.regcoeff.b, r:3} );
+                    }
+                    return { // data
+                            datasets: [{
+                                label: 'coefficients',
+                                data: datapoints4,
+                                backgroundColor: "#FF6384",
+                                hoverBackgroundColor: "#FF6384",
+                            }],
+                    };
+                }, this);
+                //
+                this.DynamicHistForecastData = ko.computed(function () {
+                    var arr5 = [];
+                    for (var i5=0; i5<100; i5++) {
+                        var sar = simAndReg(this.Xs(), this.intercept(), this.beta(), this.errstd());
+                        arr5.push( sar.regfun(this.newX()) );
+                    }
+                    var bins5 = d3.histogram().thresholds(9)(arr5); //.domain([0,1])
+                    var labels5 = [];
+                    var data5 = [];
+                    for (var i5=0; i5<bins5.length; i5++) {
+                        labels5.push( 0.5*(bins5[i5].x0+bins5[i5].x1) );
+                        data5.push( bins5[i5].length/arr5.length );
+                    }
+                    return { // data
+                            labels: labels5,
+                            datasets: [{
+                                label: 'forecasts',
+                                data: data5,
+                                backgroundColor: "#FF6384",
+                                hoverBackgroundColor: "#FF6384",
+                            }],
+                    };
+                }, this);
+            }
+        </script>
         <script>
             var gaussian = function() {
                 // Box Muller method
@@ -34,32 +113,21 @@
                 var g = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
                 return g;
             }
-            var intercept = -6;
-            var beta = 3;
-            var nbobs = 25;
-            var errstd = .75;
-            var Xs = [];
-            for (i=0; i<nbobs; i++) {
-                var x = gaussian();
-                Xs.push(x);
-            }
-            var simAndReg = function() {
+            var simAndReg = function(_Xlist, _intercept, _beta, _errstd) {
                 var M = [];
-                for (i=0; i<nbobs; i++) {
-                    var y = intercept + beta*Xs[i] + errstd*gaussian();
-                    M.push([Xs[i], y]);
+                for (var i=0; i<_Xlist.length; i++) {
+                    var y = 1*_intercept + _beta*_Xlist[i] + _errstd*gaussian(); // WARNNIG : *1 for casting purpose
+                    M.push([_Xlist[i], y]);
                 }
+                //console.log(M[0]);
                 var regcoeff = ss.linearRegression(M);
                 var regfun = ss.linearRegressionLine(regcoeff);
                 return {XY:M, regcoeff:regcoeff, regfun:regfun};
             }
-            var SAR0 = simAndReg();
         </script>
-    
     </head>
  
     <body>
-    
         <div class="container">
         <div class="row"><div class="col-md-10 col-md-offset-1">
         
@@ -104,29 +172,28 @@
                     <div class="row">
                         <div class="col-md-3">
                             <label>Number of observations:</label><br /> 
-                            <input type="number" name="nbobs" class="form-control" value="25" min="5" max="1000" />
+                            <input type="number" name="nbobservations" class="form-control" data-bind="value: nbobs" min="5" max="1000" />
                         </div>
                     </div>
                 
                     <div class="row">
                         <div class="col-md-3">
                             <label>Model Intercept:</label><br />
-                            <!--<input type="number" name="intercept" value="-5" />-->
-                            <input type="text" name="intercept" class="form-control" value="-6"/>
+                            <input type="number" name="constant" class="form-control" data-bind="value: intercept" />
                         </div>
                     </div>
                 
                     <div class="row">
                         <div class="col-md-3">
                             <label>Model Coefficient:</label><br /> 
-                            <input type="text" name="coefficient" class="form-control" value="3" />
+                            <input type="number" name="slope" class="form-control" data-bind="value: beta" />
                         </div>
                     </div>
                 
                     <div class="row">
                         <div class="col-md-3">
                             <label>Error Standard Deviation:</label><br /> 
-                            <input type="number" name="stdeviation" class="form-control" value="3" min="0" max="10" />
+                            <input type="number" name="stdeviation" class="form-control" data-bind="value: errstd" min="0" max="10" />
                         </div>
                     </div>
                     
@@ -136,7 +203,10 @@
             <div class="panel panel-info">
                 <div class="panel-heading">Linear regression output</div>
                 <div class="panel-body">
-                    <pre id="summary" class="shiny-text-output"></pre>
+                    <pre id="summary" class="shiny-text-output">
+                    <strong data-bind="text: SAR0().regcoeff.b"></strong>
+                    <strong data-bind="text: SAR0().regcoeff.m"></strong>
+                    </pre>
                 </div>
             </div>
             
@@ -144,7 +214,10 @@
                 <div class="panel-heading">Observed values against fitted values</div>
                 <div class="panel-body">
                     <!--<div id="plotFit" class="shiny-plot-output" style="width:100%; height:400px"></div>-->
-                    <canvas id="plotFit"></canvas>
+                    <!--<canvas id="plotFit"></canvas>-->
+                    <canvas id="plotFit" data-bind="chart:{type:'bubble', data:DynamicPlotFitData(), options:{observeChanges:true, throttle:1000}}"></canvas>
+                    <!--<canvas id="some-dynamic-doughnut-chart"
+                    data-bind="chart: { type: 'doughnut', data: DynamicDoughnutData(), options: { observeChanges: true, throttle: 1000 } }"></canvas>-->
                 </div>
                 <div class="panel-footer">No specific pattern in the errors</div>
             </div>
@@ -160,7 +233,8 @@
                 <div class="panel-heading">Summary of (100x) repeated OLS experiments</div>
                 <div class="panel-body">
                     <!--<div id="plotBoxes" class="shiny-plot-output" style="height:800px"></div>-->
-                    <canvas id="plotBoxes"></canvas>
+                    <!--<canvas id="plotBoxes"></canvas>-->
+                    <canvas id="plotBoxes" data-bind="chart:{type:'bubble', data:DynamicPlotBoxData(), options:{observeChanges:true, throttle:1000}}"></canvas>
                 </div>
             </div>
             
@@ -186,7 +260,7 @@
                     <!--<label>Test X-valueNumber of observations:</label><br /> 
                     <input type="number" name="newX" class="shiny-slider-input form-control" value="25" min="5" max="1000" />-->
                     <label class="control-label" for="newX">Test X-value:</label>
-                    <input id="newX" type="slider" name="newX" value="10" class="jslider" data-from="-20" data-to="20" data-step="1" data-skin="plastic" data-round="FALSE" data-locale="us" data-format="#,##0.#####" data-smooth="FALSE"/>
+                    <input id="newX" type="slider" name="newX" data-bind="value: newX" class="jslider" data-from="-20" data-to="20" data-step="1" data-skin="plastic" data-round="FALSE" data-locale="us" data-format="#,##0.#####" data-smooth="FALSE"/>
                 </div>
             </div>
             
@@ -194,7 +268,9 @@
                 <div class="panel-heading">Histogram of simulated forecasts</div>
                 <div class="panel-body">
                     <!--<div class="shiny-plot-output" style="width:100%; height:400px"></div>-->
-                    <canvas id="plotHistForecast"></canvas>
+                    <!--<canvas id="plotHistForecast"></canvas>-->
+                    <canvas id="plotHistForecast" data-bind="chart:{type:'bar', data:DynamicHistForecastData(), options:{observeChanges:true, throttle:1000}}"></canvas>
+                    <!--<strong data-bind="text: DynamicHistForecastData().labels"></strong>-->
                 </div>
                 <div class="panel-footer">This is the so-called bootstraping method</div>
             </div>
@@ -202,70 +278,61 @@
         </div></div>
         </div>
 
+        <!--<script>
+            var draw4 = function() {
+                var ctx4 = document.getElementById("plotBoxes").getContext("2d");
+                var datapoints4 = [];
+                for (var i4=0; i4<100; i4++) {
+                    var sar = simAndReg(Xs, intercept, beta, errstd);
+                    datapoints4.push( {x:sar.regcoeff.m, y:sar.regcoeff.b, r:3} );
+                }
+                var myChart4 = new Chart(ctx4, {
+                    type: 'bubble',
+                    data: {
+                        datasets: [{
+                            label: 'coefficients',
+                            data: datapoints4,
+                            backgroundColor: "#FF6384",
+                            hoverBackgroundColor: "#FF6384",
+                        }],
+                    },
+                });
+            }
+        </script>-->
+        <!--<script>
+            var draw5 = function() {
+                var newX = 2.5;
+                var arr5 = [];
+                for (var i5=0; i5<100; i5++) {
+                    var sar = simAndReg(Xs, intercept, beta, errstd);
+                    arr5.push( sar.regfun(newX) );
+                }
+                var bins5 = d3.histogram().thresholds(9)(arr5); //.domain([0,1])
+                var labels5 = [];
+                var data5 = [];
+                for (var i5=0; i5<bins5.length; i5++) {
+                    labels5.push( 0.5*(bins5[i5].x0+bins5[i5].x1) );
+                    data5.push( bins5[i5].length/arr5.length );
+                }
+                var ctx5 = document.getElementById("plotHistForecast").getContext("2d");
+                var myChart5 = new Chart(ctx5, {
+                    type: 'bar',
+                    data: {
+                        labels: labels5,
+                        datasets: [{
+                            label: 'forecasts',
+                            data: data5,
+                            backgroundColor: "#FF6384",
+                            hoverBackgroundColor: "#FF6384",
+                        }],
+                    },
+                });
+            }
+        </script>-->
         <script>
-            var ctx3 = document.getElementById("plotFit").getContext("2d");
-            var datapoints3 = [];
-            for (var i3=0; i3<SAR0.XY.length; i3++) {
-                datapoints3.push( {x:SAR0.XY[i3][1], y:SAR0.regfun(SAR0.XY[i3][0]), r:5} );
-            }
-            var myChart3 = new Chart(ctx3, {
-                type: 'bubble',
-                data: {
-                    datasets: [{
-                        label: 'error',
-                        data: datapoints3,
-                        backgroundColor: "#FF6384",
-                        hoverBackgroundColor: "#FF6384",
-                    }],
-                },
-            });
-        </script>
-        <script>
-            var ctx4 = document.getElementById("plotBoxes").getContext("2d");
-            var datapoints4 = [];
-            for (var i4=0; i4<100; i4++) {
-                var sar = simAndReg();
-                datapoints4.push( {x:sar.regcoeff.m, y:sar.regcoeff.b, r:3} );
-            }
-            var myChart4 = new Chart(ctx4, {
-                type: 'bubble',
-                data: {
-                    datasets: [{
-                        label: 'coefficients',
-                        data: datapoints4,
-                        backgroundColor: "#FF6384",
-                        hoverBackgroundColor: "#FF6384",
-                    }],
-                },
-            });
-        </script>
-        <script>
-            var newX = 10;
-            var arr5 = [];
-            for (var i5=0; i5<100; i5++) {
-                var sar = simAndReg();
-                arr5.push( sar.regfun(newX) );
-            }
-            var bins5 = d3.histogram().thresholds(9)(arr5); //.domain([0,1])
-            var labels5 = [];
-            var data5 = [];
-            for (var i5=0; i5<bins5.length; i5++) {
-                labels5.push( 0.5*(bins5[i5].x0+bins5[i5].x1) );
-                data5.push( bins5[i5].length/arr5.length );
-            }
-            var ctx5 = document.getElementById("plotHistForecast").getContext("2d");
-            var myChart5 = new Chart(ctx5, {
-                type: 'bar',
-                data: {
-                    labels: labels5,
-                    datasets: [{
-                        label: 'forecasts',
-                        data: data5,
-                        backgroundColor: "#FF6384",
-                        hoverBackgroundColor: "#FF6384",
-                    }],
-                },
-            });
+            // Activates knockout.js
+            var koAVM = new AppViewModel();
+            ko.applyBindings(koAVM);
         </script>
     </body>
 
