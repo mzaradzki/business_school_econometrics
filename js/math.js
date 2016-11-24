@@ -43,13 +43,18 @@ var MultiRegression = function(Xs, Ys, addConstantToX) {
     var V = numeric.dot(numeric.transpose(fullXs), Ys);
     var Beta = numeric.solve(A, V);
     var predictions = numeric.dot(fullXs, Beta);
+    var predictionsMean = numeric.sum(predictions)/  predictions.length;
+    var SSExp = numeric.norm2(numeric.sub(predictions, predictionsMean));
+    var YsMean = numeric.sum(Ys) / predictions.length;
+    var SSTot = numeric.norm2(numeric.sub(Ys, YsMean));
     var residuals = numeric.sub(Ys, predictions);
+    var SSRes = numeric.norm2(residuals);
     var dof = (Ys.length-Beta.length);
-    var SSR = numeric.norm2(residuals);
-    var s = Math.sqrt(SSR / dof);
+    var s = Math.sqrt(SSRes / dof);
     var BetaCovar = numeric.mul(s*s, numeric.inv(A));
+    var R2 = 1-SSRes/SSTot;
     //var regFun = multilinearRegressionLine(Beta, addConstantToX);
-    return {addConstantToX:addConstantToX, beta:Beta, dof:dof, SSR:SSR, stdErr:s, betaCov:BetaCovar};
+    return {addConstantToX:addConstantToX, beta:Beta, dof:dof, SSRes:SSRes, SSTot:SSTot, SSExp:SSExp, R2:R2, stdErr:s, betaCov:BetaCovar};
 }
 var testMultiRegression = function(addConstantToX) {
     var Xs = [[1,0], [1,0.5],[2,0],[-1,0],[1,-1],[1,2]];
