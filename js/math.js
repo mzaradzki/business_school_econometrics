@@ -7,6 +7,15 @@ var gaussian = function() {
     return g;
 }
 
+var DurbinWatson = function(vector) {
+    var dwNum = 0;
+    for (var i=1; i<vector.length; i++) {
+        var d = (vector[i]-vector[i-1]);
+        dwNum+= d*d;
+    }
+    return dwNum / numeric.norm2Squared(vector);
+}
+
 /*
 // DEPRECATED : based on simple_statistics module
 function multilinearRegressionLine(mb) {
@@ -44,17 +53,25 @@ var MultiRegression = function(Xs, Ys, addConstantToX) {
     var Beta = numeric.solve(A, V);
     var predictions = numeric.dot(fullXs, Beta);
     var predictionsMean = numeric.sum(predictions)/  predictions.length;
-    var SSExp = numeric.norm2(numeric.sub(predictions, predictionsMean));
+    var SSExp = numeric.norm2Squared(numeric.sub(predictions, predictionsMean));
     var YsMean = numeric.sum(Ys) / predictions.length;
-    var SSTot = numeric.norm2(numeric.sub(Ys, YsMean));
+    var SSTot = numeric.norm2Squared(numeric.sub(Ys, YsMean));
     var residuals = numeric.sub(Ys, predictions);
-    var SSRes = numeric.norm2(residuals);
+    var SSRes = numeric.norm2Squared(residuals);
     var dof = (Ys.length-Beta.length);
     var s = Math.sqrt(SSRes / dof);
     var BetaCovar = numeric.mul(s*s, numeric.inv(A));
     var R2 = 1-SSRes/SSTot;
+    var DW = DurbinWatson(residuals);
     //var regFun = multilinearRegressionLine(Beta, addConstantToX);
-    return {addConstantToX:addConstantToX, beta:Beta, dof:dof, SSRes:SSRes, SSTot:SSTot, SSExp:SSExp, R2:R2, stdErr:s, betaCov:BetaCovar};
+    return {
+            addConstantToX:addConstantToX,
+            beta:Beta, dof:dof,
+            SSRes:SSRes, SSTot:SSTot, SSExp:SSExp,
+            R2:R2,
+            stdErr:s, betaCov:BetaCovar,
+            DW:DW,
+        };
 }
 var testMultiRegression = function(addConstantToX) {
     var Xs = [[1,0], [1,0.5],[2,0],[-1,0],[1,-1],[1,2]];
