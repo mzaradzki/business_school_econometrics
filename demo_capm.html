@@ -33,32 +33,159 @@
         <script type="text/javascript" src="js/knockout.chart.js"></script>
 
         <script>
-            var marketdata = null;
-
-            function processData(allText) {
-                alert('csv data loaded');
-                marketdata = csvParser(allText);
-                var capmXs = [];
-                var ffXs = [];
-                for (var t=0; t<marketdata['Date'].length; t++) {
-                    capmXs.push( [marketdata['NETMKT'][t]] );
-                    ffXs.push( [marketdata['NETMKT'][t], marketdata['SMB'][t], marketdata['HML'][t]] );
-                }
-                var capmMR = MultiRegression(capmXs, marketdata['DXLV'], true);
-                var ffMR = MultiRegression(ffXs, marketdata['DXLV'], true);
-                console.log(capmMR);
-            }
-
-            $(document).ready(function() {
-                $.ajax({
-                    type: "GET",
-                    url: "data/data_spdr_sectors.csv",
-                    dataType: "text",
-                    success: function(allText) {
-                        processData(allText);
+            function AppViewModel(marketdata) {
+                this.marketdata = ko.observale(marketdata);
+                this.sector = ko.observable('XLV');
+                this.intercept = ko.observable(-2);
+                //
+                this.capmXs = ko.computed(function() {
+                    var capmXs = [];
+                    for (var t=0; t<this.marketdata()['Date'].length; t++) {
+                        capmXs.push( [this.marketdata()['NETMKT'][t]] );
                     }
-                });
-            });
+                    return capmXs;
+                }, this);
+                //
+                this.ffXs = ko.computed(function() {
+                    var ffXs = [];
+                    for (var t=0; t<this.marketdata()['Date'].length; t++) {
+                        ffXs.push( [this.marketdata()['NETMKT'][t], this.marketdata()['SMB'][t], this.marketdata()['HML'][t]] );
+                    }
+                    return ffXs;
+                }, this);
+                //
+                this.capmSAR = ko.computed(function() {
+                    return MultiRegression(this.capmXs(), this.marketdata()[this.sector()], true);
+                }, this);
+                //
+                this.ffSAR = ko.computed(function() {
+                    return MultiRegression(this.ffXs(), this.marketdata()[this.sector()], true);
+                }, this);
+                //
+                this.DynamicPlotStudent0 = ko.computed(function() {
+                    var mean0 = this.SAR0().MR.beta[0];
+                    var std0 = Math.sqrt(this.SAR0().MR.betaCov[0][0]);
+                    var labels0 = [];
+                    var data0 = [];
+                    for (var i3=0; i3<50; i3++) {
+                        var shift = 3.5*(i3-25)/25;
+                        labels0.push( mean0 + shift*std0 );
+                        data0.push( jStat.studentt.pdf(shift, this.SAR0().MR.dof) );
+                    };
+                    return {
+                        type:'line',
+                        data: { // data
+                            labels: labels0,
+                            datasets: [{
+                                label: 'intercept pdf',
+                                data: data0,
+                                backgroundColor: "#FF6384",
+                                hoverBackgroundColor: "#FF6384",
+                            }],
+                        },
+                        //options: { observeChanges: true, throttle: 1000 },
+                    };
+                }, this);
+                //
+                this.DynamicPlotStudent1 = ko.computed(function() {
+                    var mean1 = this.SAR0().MR.beta[1];
+                    var std1 = Math.sqrt(this.SAR0().MR.betaCov[1][1]);
+                    var labels1 = [];
+                    var data1 = [];
+                    for (var i3=0; i3<50; i3++) {
+                        var shift = 3.5*(i3-25)/25;
+                        labels1.push( mean1 + shift*std1 );
+                        data1.push( jStat.studentt.pdf(shift, this.SAR0().MR.dof) );
+                    };
+                    return {
+                        type:'line',
+                        data: { // data
+                            labels: labels1,
+                            datasets: [{
+                                label: 'beta pdf',
+                                data: data1,
+                                backgroundColor: "#FF6384",
+                                hoverBackgroundColor: "#FF6384",
+                            }],
+                        },
+                        //options: { observeChanges: true, throttle: 1000 },
+                    };
+                }, this);
+                //
+                this.DynamicPlotFisherR2 = ko.computed(function() {
+                    var labelsF = [];
+                    var dataF = [];
+                    for (var ir2=0; ir2<50; ir2++) {
+                        var shift = 9*ir2/50;
+                        labelsF.push( shift );
+                        dataF.push( jStat.centralF.cdf(shift, this.SAR0().MR.F_df1, this.SAR0().MR.F_df2 ) );
+                    };
+                    //console.log(labelsF);
+                    //console.log(dataF);
+                    return {
+                        type:'line',
+                        data: { // data
+                            labels: labelsF,
+                            datasets: [{
+                                label: 'F cdf',
+                                data: dataF,
+                                backgroundColor: "#FF6384",
+                                hoverBackgroundColor: "#FF6384",
+                            }],
+                        },
+                        //options: { observeChanges: true, throttle: 1000 },
+                    };
+                }, this);
+                //
+                this.DynamicPlotBoxData = ko.computed(function () {
+                    var datapoints4 = [];
+                    for (var i4=0; i4<100; i4++) {
+                        var sar = simAndReg(this.Xs(), this.intercept(), this.beta(), this.errstd());
+                        datapoints4.push( {x:sar.MR.beta[0], y:sar.MR.beta[1], r:3} );
+                    }
+                    return {
+                        type:'bubble',
+                        data: { // data
+                            datasets: [{
+                                label: 'coefficients',
+                                data: datapoints4,
+                                backgroundColor: "#FF6384",
+                                hoverBackgroundColor: "#FF6384",
+                            }],
+                        },
+                        //options: { observeChanges: true, throttle: 1000 },
+                    };
+                }, this);
+                //
+                this.DynamicHistForecastData = ko.computed(function () {
+                    var arr5 = [];
+                    for (var i5=0; i5<100; i5++) {
+                        var sar = simAndReg(this.Xs(), this.intercept(), this.beta(), this.errstd());
+                        arr5.push( sar.regfun([this.newX()]) );
+                    }
+                    var bins5 = d3.histogram().thresholds(9)(arr5); //.domain([0,1])
+                    var labels5 = [];
+                    var data5 = [];
+                    for (var i5=0; i5<bins5.length; i5++) {
+                        labels5.push( 0.5*(bins5[i5].x0+bins5[i5].x1) );
+                        data5.push( bins5[i5].length/arr5.length );
+                    }
+                    return {
+                        type:'bar',
+                        data: { // data
+                            labels: labels5,
+                            datasets: [{
+                                label: 'forecasts',
+                                data: data5,
+                                backgroundColor: "#FF6384",
+                                hoverBackgroundColor: "#FF6384",
+                            }],
+                        },
+                        //options: { observeChanges: true, throttle: 1000 },
+                    };
+                }, this);
+            }
+            
         </script>
     
     </head>
@@ -253,5 +380,48 @@
 
         </div></div>  
         </div>
+        <script>
+            //
+            ko.components.register('ChartWrapper', {
+                viewModel: function(params) {
+                    //console.log('bbbbbbbbb');
+                    this.type = ko.observable(params && params.type || '');
+                    this.data = ko.observable(params && params.data || null);
+                    this.options = ko.observable(params && params.options || null);
+                },
+                template: '<canvas data-bind="chart:{type:type, data:data}"></canvas>'
+            });
+            //
+            var marketdata = null;
+            var koAVM = null;
+
+            function processData(allText) {
+                alert('csv data loaded');
+                marketdata = csvParser(allText);
+                /*var capmXs = [];
+                var ffXs = [];
+                for (var t=0; t<marketdata['Date'].length; t++) {
+                    capmXs.push( [marketdata['NETMKT'][t]] );
+                    ffXs.push( [marketdata['NETMKT'][t], marketdata['SMB'][t], marketdata['HML'][t]] );
+                }
+                var capmMR = MultiRegression(capmXs, marketdata['DXLV'], true);
+                var ffMR = MultiRegression(ffXs, marketdata['DXLV'], true);
+                console.log(capmMR);*/
+                // Activates knockout.js
+                koAVM = new AppViewModel(marketdata);
+                ko.applyBindings(koAVM);
+            }
+
+            $(document).ready(function() {
+                $.ajax({
+                    type: "GET",
+                    url: "data/data_spdr_sectors.csv",
+                    dataType: "text",
+                    success: function(allText) {
+                        processData(allText);
+                    }
+                });
+            });
+        </script>
     </body>
 </html>
