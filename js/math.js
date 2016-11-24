@@ -66,7 +66,8 @@ var MultiRegression = function(Xs, Ys, addConstantToX) {
     //var regFun = multilinearRegressionLine(Beta, addConstantToX);
     return {
             addConstantToX:addConstantToX,
-            beta:Beta, dof:dof,
+            beta:Beta,
+            dof:dof,
             SSRes:SSRes, SSTot:SSTot, SSExp:SSExp,
             R2:R2,
             stdErr:s, betaCov:BetaCovar,
