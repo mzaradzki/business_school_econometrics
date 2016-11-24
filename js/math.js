@@ -63,6 +63,7 @@ var MultiRegression = function(Xs, Ys, addConstantToX) {
     var BetaCovar = numeric.mul(s*s, numeric.inv(A));
     var R2 = 1-SSRes/SSTot;
     var DW = DurbinWatson(residuals);
+    var F = ((SSTot-SSRes)/(Beta.length-1)) / (SSRes/(Ys.length-Beta.length));
     //var regFun = multilinearRegressionLine(Beta, addConstantToX);
     return {
             addConstantToX:addConstantToX,
@@ -70,6 +71,7 @@ var MultiRegression = function(Xs, Ys, addConstantToX) {
             dof:dof,
             SSRes:SSRes, SSTot:SSTot, SSExp:SSExp,
             R2:R2,
+            F:F, F_df1:Beta.length-1, F_df2:Ys.length-Beta.length, F_pval:1-jStat.centralF.cdf(F, Beta.length-1, Ys.length-Beta.length),
             stdErr:s, betaCov:BetaCovar,
             DW:DW,
         };

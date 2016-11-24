@@ -234,6 +234,7 @@
 <strong data-bind="text: 'est. : ' + SAR0().MR.beta[0].toFixed(3) + '  std(est.) : ' + Math.sqrt(SAR0().MR.betaCov[0][0]).toFixed(3) + '  t-stat : ' + (SAR0().MR.beta[0]/Math.sqrt(SAR0().MR.betaCov[0][0])).toFixed(3)"></strong>
 <strong data-bind="text: 'est. : ' + SAR0().MR.beta[1].toFixed(3) + '  std(est.) : ' + Math.sqrt(SAR0().MR.betaCov[1][1]).toFixed(3) + '  t-stat : ' + (SAR0().MR.beta[1]/Math.sqrt(SAR0().MR.betaCov[1][1])).toFixed(3)"></strong>
 <strong data-bind="text: 'R2 : ' + SAR0().MR.R2.toFixed(3)"></strong>
+<strong data-bind="text: 'F : ' + SAR0().MR.F.toFixed(3) + '  p-val : ' + SAR0().MR.F_pval.toFixed(4)"></strong>
 <strong data-bind="text: 'DW : ' + SAR0().MR.DW.toFixed(2)"></strong>
                     </pre>
                 </div>
