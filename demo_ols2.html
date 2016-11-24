@@ -74,6 +74,7 @@
                         //options: { observeChanges: true, throttle: 1000 },
                     };
                 }, this);
+                //
                 this.DynamicPlotStudent1 = ko.computed(function() {
                     var mean1 = this.SAR0().MR.beta[1];
                     var std1 = Math.sqrt(this.SAR0().MR.betaCov[1][1]);
@@ -91,6 +92,31 @@
                             datasets: [{
                                 label: 'beta pdf',
                                 data: data1,
+                                backgroundColor: "#FF6384",
+                                hoverBackgroundColor: "#FF6384",
+                            }],
+                        },
+                        //options: { observeChanges: true, throttle: 1000 },
+                    };
+                }, this);
+                //
+                this.DynamicPlotFisherR2 = ko.computed(function() {
+                    var labelsF = [];
+                    var dataF = [];
+                    for (var ir2=0; ir2<50; ir2++) {
+                        var shift = 9*ir2/50;
+                        labelsF.push( shift );
+                        dataF.push( jStat.centralF.cdf(shift, this.SAR0().MR.F_df1, this.SAR0().MR.F_df2 ) );
+                    };
+                    //console.log(labelsF);
+                    //console.log(dataF);
+                    return {
+                        type:'line',
+                        data: { // data
+                            labels: labelsF,
+                            datasets: [{
+                                label: 'F cdf',
+                                data: dataF,
                                 backgroundColor: "#FF6384",
                                 hoverBackgroundColor: "#FF6384",
                             }],
@@ -311,17 +337,18 @@
             <div class="panel panel-info">
                 <div class="panel-heading">Fisher test of R2</div>
                 <div class="panel-body">
-                    <div id="plotFisherR2" class="shiny-plot-output" style="width:100%; height:400px"></div>
+                    <!--<div id="plotFisherR2" class="shiny-plot-output" style="width:100%; height:400px"></div>-->
+                    <div data-bind='component: { name: "ChartWrapper", params: DynamicPlotFisherR2, }'></div>
                 </div>
             </div>
             
-            <div class="panel panel-info">
+            <!--<div class="panel panel-info">
                 <div class="panel-heading">Joint Distribution of Intercept and Beta</div>
                 <div class="panel-body">
                     <div id="plotBiNorm" class="shiny-plot-output" style="width:100%; height:400px"></div>
                 </div>
                 <div class="panel-footer">* An approximative distribution only! Compare the scale and slope with the report covariance</div>
-            </div>
+            </div>-->
             
             <div class="panel panel-info">
                 <div class="panel-heading">Distribution of Relative Variance Error</div>
