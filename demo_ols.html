@@ -209,11 +209,10 @@
                 <div class="panel-body">
                     <!--<div id="plotFit" class="shiny-plot-output" style="width:100%; height:400px"></div>-->
                     <!--<canvas id="plotFit"></canvas>-->
-                    
                     <!--<div data-bind="content: DynamicPlotFitData"><canvas id="plotFit" data-bind="chart: DynamicPlotFitData()"></canvas></div>-->
-                    <div data-bind='component: { name: "ChartWrapper", params: DynamicPlotFitData, }'></div>
                     <!--<canvas id="some-dynamic-doughnut-chart"
                     data-bind="chart: { type: 'doughnut', data: DynamicDoughnutData(), options: { observeChanges: true, throttle: 1000 } }"></canvas>-->
+                    <div data-bind='component: { name: "ChartWrapper", params: DynamicPlotFitData, }'></div>
                 </div>
                 <div class="panel-footer">No specific pattern in the errors</div>
             </div>
@@ -229,8 +228,6 @@
                 <div class="panel-heading">Summary of (100x) repeated OLS experiments</div>
                 <div class="panel-body">
                     <!--<div id="plotBoxes" class="shiny-plot-output" style="height:800px"></div>-->
-                    <!--<canvas id="plotBoxes"></canvas>-->
-                    <!--<canvas id="plotBoxes" data-bind="chart:{type:'bubble', data:DynamicPlotBoxData(), options:{observeChanges:true, throttle:1000}}"></canvas>-->
                     <div data-bind='component: { name: "ChartWrapper", params: DynamicPlotBoxData, }'></div>
                 </div>
             </div>
@@ -254,7 +251,7 @@
             <div class="panel panel-info">
                 <div class="panel-heading">Forecast simulation setup</div>
                 <div class="panel-body">
-                    <!--<label>Test X-valueNumber of observations:</label><br /> 
+                    <!--<label>Test X-value:</label><br /> 
                     <input type="number" name="newX" class="shiny-slider-input form-control" value="25" min="5" max="1000" />-->
                     <label class="control-label" for="newX">Test X-value:</label>
                     <input id="newX" type="slider" name="newX" data-bind="value: newX" class="jslider" data-from="-20" data-to="20" data-step="1" data-skin="plastic" data-round="FALSE" data-locale="us" data-format="#,##0.#####" data-smooth="FALSE"/>
@@ -265,10 +262,7 @@
                 <div class="panel-heading">Histogram of simulated forecasts</div>
                 <div class="panel-body">
                     <!--<div class="shiny-plot-output" style="width:100%; height:400px"></div>-->
-                    <!--<canvas id="plotHistForecast"></canvas>-->
-                    <!--<canvas id="plotHistForecast" data-bind="chart:{type:'bar', data:DynamicHistForecastData(), options:{observeChanges:true, throttle:1000}}"></canvas>-->
                     <div data-bind='component: { name: "ChartWrapper", params: DynamicHistForecastData, }'></div>
-                    <!--<strong data-bind="text: DynamicHistForecastData().labels"></strong>-->
                 </div>
                 <div class="panel-footer">This is the so-called bootstraping method</div>
             </div>
