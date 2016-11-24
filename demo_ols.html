@@ -13,7 +13,7 @@
 
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.5.3/jstat.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.1/simple_statistics.min.js"></script>
+        <!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.1/simple_statistics.min.js"></script>-->
 
         <script type="text/javascript" src="js/math.js"></script>
 
@@ -74,7 +74,7 @@
                     var datapoints4 = [];
                     for (var i4=0; i4<100; i4++) {
                         var sar = simAndReg(this.Xs(), this.intercept(), this.beta(), this.errstd());
-                        datapoints4.push( {x:sar.regcoeff.m, y:sar.regcoeff.b, r:3} );
+                        datapoints4.push( {x:sar.MR.beta[0], y:sar.MR.beta[1], r:3} );
                     }
                     return {
                         type:'bubble',
@@ -94,7 +94,7 @@
                     var arr5 = [];
                     for (var i5=0; i5<100; i5++) {
                         var sar = simAndReg(this.Xs(), this.intercept(), this.beta(), this.errstd());
-                        arr5.push( sar.regfun(this.newX()) );
+                        arr5.push( sar.regfun([this.newX()]) );
                     }
                     var bins5 = d3.histogram().thresholds(9)(arr5); //.domain([0,1])
                     var labels5 = [];
@@ -198,8 +198,9 @@
                 <div class="panel-heading">Linear regression output</div>
                 <div class="panel-body">
                     <pre id="summary" class="shiny-text-output">
-                    <strong data-bind="text: SAR0().regcoeff.b"></strong>
-                    <strong data-bind="text: SAR0().regcoeff.m"></strong>
+                    <strong data-bind="text: SAR0().MR.beta[0]"></strong>&nbsp;&nbsp;<strong data-bind="text: Math.sqrt(SAR0().MR.betaCov[0][0])"></strong>
+                    <strong data-bind="text: SAR0().MR.beta[1]"></strong>&nbsp;&nbsp;<strong data-bind="text: Math.sqrt(SAR0().MR.betaCov[1][1])"></strong>
+
                     </pre>
                 </div>
             </div>

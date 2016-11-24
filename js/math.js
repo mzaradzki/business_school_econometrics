@@ -1,3 +1,4 @@
+
 var gaussian = function() {
     // Box Muller method
     var u = 1 - Math.random(); // Subtraction to flip [0, 1) to (0, 1].
@@ -5,10 +6,33 @@ var gaussian = function() {
     var g = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
     return g;
 }
-var MultiReg = function(Xs, Ys, addConstant) {
+
+/*
+// DEPRECATED : based on simple_statistics module
+function multilinearRegressionLine(mb) {
+    // Return a function that computes a `y` value for each
+    // x value it is given, based on the values of `b` and `a`
+    // that we just computed.
+    return function(x) {
+        return mb.b + (mb.m * x);
+    };
+}
+*/
+function multilinearRegressionLine(beta, addConstantToX) {
+    return function(x) {
+        if (addConstantToX) {
+            return numeric.dot(beta, [1].concat(x));
+        }
+        else
+        {
+            return numeric.dot(beta, x);
+        }
+    };
+}
+var MultiRegression = function(Xs, Ys, addConstantToX) {
     // A * beta = V
     var fullXs = numeric.clone(Xs);
-    if (addConstant) {
+    if (addConstantToX) {
         fullXs = [];
         for (var r=0; r<Xs.length; r++) {
             var newrow = [1];
@@ -24,16 +48,20 @@ var MultiReg = function(Xs, Ys, addConstant) {
     var SSR = numeric.norm2(residuals);
     var s = Math.sqrt(SSR / dof);
     var BetaCovar = numeric.mul(s*s, numeric.inv(A));
-    return {beta:Beta, dof:dof, SSR:SSR, stdErr:s, betaCov:BetaCovar};
+    //var regFun = multilinearRegressionLine(Beta, addConstantToX);
+    return {addConstantToX:addConstantToX, beta:Beta, dof:dof, SSR:SSR, stdErr:s, betaCov:BetaCovar};
 }
-var testMultiReg = function(addConstant) {
+var testMultiRegression = function(addConstantToX) {
     var Xs = [[1,0], [1,0.5],[2,0],[-1,0],[1,-1],[1,2]];
     var Ys = numeric.dot(Xs, [2,3]);
     for (var yi=0; yi<Ys.length; yi++) {
         Ys[yi] = Ys[yi] + gaussian()*0.5;
     }
-    return MultiReg(Xs, Ys, addConstant);
+    return MultiRegression(Xs, Ys, addConstantToX);
 }
+
+/*
+// DEPRECATED : based on simple_statistics module
 var simAndReg = function(_Xlist, _intercept, _beta, _errstd) {
     var M = [];
     for (var i=0; i<_Xlist.length; i++) {
@@ -42,6 +70,22 @@ var simAndReg = function(_Xlist, _intercept, _beta, _errstd) {
     }
     //console.log(M[0]);
     var regcoeff = ss.linearRegression(M);
+    //console.log(regcoeff);
     var regfun = ss.linearRegressionLine(regcoeff);
     return {XY:M, regcoeff:regcoeff, regfun:regfun};
 }
+*/
+var simAndReg = function(_Xlist, _intercept, _beta, _errstd) {
+    var M = [];
+    var Ys = [];
+    for (var i=0; i<_Xlist.length; i++) {
+        var y = 1*_intercept + _beta*_Xlist[i] + _errstd*gaussian(); // WARNNIG : *1 for casting purpose
+        Ys.push(y);
+        M.push([_Xlist[i], y]);
+    }
+    //
+    var mr = MultiRegression(numeric.transpose([_Xlist]), Ys, true);
+    var regfun = multilinearRegressionLine(mr.beta, mr.addConstantToX);
+    return {XY:M, Y:Ys, MR:mr, regfun:regfun};
+}
+
