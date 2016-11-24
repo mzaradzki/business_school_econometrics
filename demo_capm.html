@@ -35,14 +35,14 @@
         <script>
             function AppViewModel(marketdata) {
                 this.marketdata = ko.observable(marketdata);
-                this.sector = ko.observable('XLV');
+                this.sector = ko.observable({moniker:'XLV', fullname:'Health'});
                 this.availableSectors = ko.observableArray([
-                    {sector:'XLK', fullname:'Technology'},
-                    {sector:'XLV', fullname:'Health'},
-                    {sector:'XLF', fullname:'Financial'},
-                    {sector:'XLI', fullname:'Industry'},
-                    {sector:'XLB', fullname:'Materials'},
-                    {sector:'XLY', fullname:'Consumer Discr.'},
+                    {moniker:'XLK', fullname:'Technology'},
+                    {moniker:'XLV', fullname:'Health'},
+                    {moniker:'XLF', fullname:'Financial'},
+                    {moniker:'XLI', fullname:'Industry'},
+                    {moniker:'XLB', fullname:'Materials'},
+                    {moniker:'XLY', fullname:'Consumer Discr.'},
                 ]),
                 //
                 this.capmXs = ko.computed(function() {
@@ -62,11 +62,11 @@
                 }, this);
                 //
                 this.capmSAR = ko.computed(function() {
-                    return MultiRegression(this.capmXs(), this.marketdata()['D'+this.sector()], true);
+                    return MultiRegression(this.capmXs(), this.marketdata()['D'+this.sector().moniker], true);
                 }, this);
                 //
                 this.ffSAR = ko.computed(function() {
-                    return MultiRegression(this.ffXs(), this.marketdata()['D'+this.sector()], true);
+                    return MultiRegression(this.ffXs(), this.marketdata()['D'+this.sector().moniker], true);
                 }, this);
                 //
                 /*this.DynamicPlotStudent0 = ko.computed(function() {
