@@ -244,14 +244,9 @@
                 
                     <div class="row">
                         <div class="col-md-3">
-                            <label>SPX sub-sector:</label><br/> 
+                            <label>SPX sub-sector:</label><br/>
                             <!--<select name="sector" class="form-control">
                                 <option value="XLV">Health</option>
-                                <option value="XLF">Financial</option>
-                                <option value="XLK">Technology</option>
-                                <option value="XLI">Industry</option>
-                                <option value="XLY">Consumer Discr.</option>
-                                <option value="XLB">Materials</option>
                             </select>-->
                             <select name="sector" data-bind="options: availableSectors, optionsText: 'fullname', value: sector"></select>
                         </div>
@@ -412,15 +407,6 @@
             function processData(allText) {
                 alert('csv data loaded');
                 marketdata = csvParser(allText);
-                /*var capmXs = [];
-                var ffXs = [];
-                for (var t=0; t<marketdata['Date'].length; t++) {
-                    capmXs.push( [marketdata['NETMKT'][t]] );
-                    ffXs.push( [marketdata['NETMKT'][t], marketdata['SMB'][t], marketdata['HML'][t]] );
-                }
-                var capmMR = MultiRegression(capmXs, marketdata['DXLV'], true);
-                var ffMR = MultiRegression(ffXs, marketdata['DXLV'], true);
-                console.log(capmMR);*/
                 // Activates knockout.js
                 koAVM = new AppViewModel(marketdata);
                 ko.applyBindings(koAVM);
