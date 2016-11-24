@@ -35,7 +35,7 @@
         <script>
             function AppViewModel(marketdata) {
                 this.marketdata = ko.observable(marketdata);
-                this.sector = ko.observable(), // Nothing selected by default - see : http://knockoutjs.com/documentation/options-binding.html
+                this.sector = ko.observable({moniker:'XLB', fullname:'Materials'}), // Nothing selected by default - see : http://knockoutjs.com/documentation/options-binding.html
                 this.availableSectors = ko.observableArray([
                     {moniker:'XLB', fullname:'Materials'},
                     {moniker:'XLF', fullname:'Financial'},
@@ -268,9 +268,15 @@
             </div>
          
             <div class="panel panel-info">
-                <div class="panel-heading">Linear regression output</div>
+                <div class="panel-heading">Linear regression output (CAPM)</div>
                 <div class="panel-body">
-                    <pre id="summary" class="shiny-text-output"></pre>
+                    <pre id="summary" class="shiny-text-output">
+<strong data-bind="text: 'est. : ' + capmSAR().MR.beta[0].toFixed(3) + '  std(est.) : ' + Math.sqrt(capmSAR().MR.betaCov[0][0]).toFixed(3) + '  t-stat : ' + (capmSAR().MR.beta[0]/Math.sqrt(capmSAR().MR.betaCov[0][0])).toFixed(3)"></strong>
+<strong data-bind="text: 'est. : ' + capmSAR().MR.beta[1].toFixed(3) + '  std(est.) : ' + Math.sqrt(capmSAR().MR.betaCov[1][1]).toFixed(3) + '  t-stat : ' + (capmSAR().MR.beta[1]/Math.sqrt(capmSAR().MR.betaCov[1][1])).toFixed(3)"></strong>
+<strong data-bind="text: 'R2 : ' + capmSAR().MR.R2.toFixed(3)"></strong>
+<strong data-bind="text: 'F : ' + capmSAR().MR.F.toFixed(3) + '  p-val : ' + capmSAR().MR.F_pval.toFixed(4)"></strong>
+<strong data-bind="text: 'DW : ' + capmSAR().MR.DW.toFixed(2)"></strong>
+                    </pre>
                 </div>
             </div>
             
