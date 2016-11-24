@@ -16,6 +16,7 @@
         <!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.1/simple_statistics.min.js"></script>-->
 
         <script type="text/javascript" src="js/math.js"></script>
+        <script type="text/javascript" src="js/csvparser.js"></script>
 
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.bundle.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.4.0/d3.min.js"></script>
@@ -32,48 +33,29 @@
         <script type="text/javascript" src="js/knockout.chart.js"></script>
 
         <script>
-            var marketdata = null; 
+            var marketdata = null;
+
             function processData(allText) {
-                var allTextLines = allText.split(/\r\n|\n/);
-                var headers = allTextLines[0].split(',');
-                for (var j = 0; j < headers.length; j++) {
-                    headers[j] = eval( headers[j] ); // "eval" to remove double quote
+                console.log('data loaded');
+                marketdata = csvParser(data);
+                var capmXs = [];
+                var ffXs = [];
+                for (var t=0; t<marketdata['Date'].length; t++) {
+                    capmXs.push( [marketdata['NETMKT'][t]] );
+                    ffXs.push( [marketdata['NETMKT'][t], marketdata['SMB'][t], marketdata['HML'][t]] );
                 }
-                console.log(headers);
-                var columns = {};
-                for (var j = 0; j < headers.length; j++) {
-                    columns[headers[j]] = [];
-                }
-                for (var i = 1; i < allTextLines.length; i++) {
-                    var data = allTextLines[i].split(',');
-                    if (data.length == headers.length) {
-                        //var tarr = [];
-                        for (var j = 0; j < headers.length; j++) {
-                            //tarr.push(headers[j] + ":" + data[j]);
-                            columns[headers[j]].push( eval(data[j]) ); // "eval" to remove double quote
-                        }
-                        //lines.push(tarr);
-                    }
-                }
-                alert(columns);
-                return columns;
+                var capmMR = MultiRegression(capmXs, marketdata['DXLV'], true);
+                var ffMR = MultiRegression(ffXs, marketdata['DXLV'], true);
+                console.log(capmMR);
             }
+
             $(document).ready(function() {
                 $.ajax({
                     type: "GET",
                     url: "data/data_spdr_sectors.csv",
                     dataType: "text",
                     success: function(data) {
-                        marketdata = processData(data);
-                        var capmXs = [];
-                        var ffXs = [];
-                        for (var t=0; t<marketdata['Date'].length; t++) {
-                            capmXs.push( [marketdata['NETMKT'][t]] );
-                            ffXs.push( [marketdata['NETMKT'][t], marketdata['SMB'][t], marketdata['HML'][t]] );
-                        }
-                        var capmMR = MultiRegression(capmXs, marketdata['DXLV'], true);
-                        var ffMR = MultiRegression(ffXs, marketdata['DXLV'], true);
-                        console.log(capmMR);
+                        processData(data);
                     }
                 });
             });
