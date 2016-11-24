@@ -61,11 +61,11 @@
                     return ffXs;
                 }, this);
                 //
-                this.capmSAR = ko.computed(function() {
+                this.capmMR = ko.computed(function() {
                     return MultiRegression(this.capmXs(), this.marketdata()['D'+this.sector().moniker], true);
                 }, this);
                 //
-                this.ffSAR = ko.computed(function() {
+                this.ffMR = ko.computed(function() {
                     return MultiRegression(this.ffXs(), this.marketdata()['D'+this.sector().moniker], true);
                 }, this);
                 //
@@ -271,11 +271,11 @@
                 <div class="panel-heading">Linear regression output (CAPM)</div>
                 <div class="panel-body">
                     <pre id="summary" class="shiny-text-output">
-<strong data-bind="text: 'est. : ' + capmSAR().MR.beta[0].toFixed(3) + '  std(est.) : ' + Math.sqrt(capmSAR().MR.betaCov[0][0]).toFixed(3) + '  t-stat : ' + (capmSAR().MR.beta[0]/Math.sqrt(capmSAR().MR.betaCov[0][0])).toFixed(3)"></strong>
-<strong data-bind="text: 'est. : ' + capmSAR().MR.beta[1].toFixed(3) + '  std(est.) : ' + Math.sqrt(capmSAR().MR.betaCov[1][1]).toFixed(3) + '  t-stat : ' + (capmSAR().MR.beta[1]/Math.sqrt(capmSAR().MR.betaCov[1][1])).toFixed(3)"></strong>
-<strong data-bind="text: 'R2 : ' + capmSAR().MR.R2.toFixed(3)"></strong>
-<strong data-bind="text: 'F : ' + capmSAR().MR.F.toFixed(3) + '  p-val : ' + capmSAR().MR.F_pval.toFixed(4)"></strong>
-<strong data-bind="text: 'DW : ' + capmSAR().MR.DW.toFixed(2)"></strong>
+<strong data-bind="text: 'est. : ' + capmMR().beta[0].toFixed(3) + '  std(est.) : ' + Math.sqrt(capmMR().betaCov[0][0]).toFixed(3) + '  t-stat : ' + (capmMR().beta[0]/Math.sqrt(capmMR().betaCov[0][0])).toFixed(3)"></strong>
+<strong data-bind="text: 'est. : ' + capmMR().beta[1].toFixed(3) + '  std(est.) : ' + Math.sqrt(capmMR().betaCov[1][1]).toFixed(3) + '  t-stat : ' + (capmMR().beta[1]/Math.sqrt(capmMR().betaCov[1][1])).toFixed(3)"></strong>
+<strong data-bind="text: 'R2 : ' + capmMR().R2.toFixed(3)"></strong>
+<strong data-bind="text: 'F : ' + capmMR().F.toFixed(3) + '  p-val : ' + capmMR().F_pval.toFixed(4)"></strong>
+<strong data-bind="text: 'DW : ' + capmMR().DW.toFixed(2)"></strong>
                     </pre>
                 </div>
             </div>
