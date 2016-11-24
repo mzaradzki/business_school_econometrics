@@ -20,6 +20,7 @@
         <!--<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">-->
         <!--<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>-->
         <script>
+            var marketdata = null; 
             function processData(allText) {
                 var allTextLines = allText.split(/\r\n|\n/);
                 var headers = allTextLines[0].split(',');
@@ -35,6 +36,7 @@
                     }
                 }
               alert(lines);
+              return lines;
             }
             $(document).ready(function() {
                 $.ajax({
@@ -42,7 +44,7 @@
                     url: "data/data_spdr_sectors.csv",
                     dataType: "text",
                     success: function(data) {
-                        processData(data);
+                        marketdata = processData(data);
                     }
                 });
             });
