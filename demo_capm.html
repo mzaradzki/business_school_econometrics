@@ -36,7 +36,14 @@
             function AppViewModel(marketdata) {
                 this.marketdata = ko.observable(marketdata);
                 this.sector = ko.observable('XLV');
-                this.intercept = ko.observable(-2);
+                this.availableSectors = ko.observableArray([
+                    {sector:'XLK', fullname:'Technology'},
+                    {sector:'XLV', fullname:'Health'},
+                    {sector:'XLF', fullname:'Financial'},
+                    {sector:'XLI', fullname:'Industry'},
+                    {sector:'XLB', fullname:'Materials'},
+                    {sector:'XLY', fullname:'Consumer Discr.'},
+                ]),
                 //
                 this.capmXs = ko.computed(function() {
                     var capmXs = [];
@@ -55,11 +62,11 @@
                 }, this);
                 //
                 this.capmSAR = ko.computed(function() {
-                    return MultiRegression(this.capmXs(), this.marketdata()[this.sector()], true);
+                    return MultiRegression(this.capmXs(), this.marketdata()['D'+this.sector()], true);
                 }, this);
                 //
                 this.ffSAR = ko.computed(function() {
-                    return MultiRegression(this.ffXs(), this.marketdata()[this.sector()], true);
+                    return MultiRegression(this.ffXs(), this.marketdata()['D'+this.sector()], true);
                 }, this);
                 //
                 /*this.DynamicPlotStudent0 = ko.computed(function() {
@@ -238,14 +245,15 @@
                     <div class="row">
                         <div class="col-md-3">
                             <label>SPX sub-sector:</label><br/> 
-                            <select name="sector" class="form-control">
+                            <!--<select name="sector" class="form-control">
                                 <option value="XLV">Health</option>
                                 <option value="XLF">Financial</option>
                                 <option value="XLK">Technology</option>
                                 <option value="XLI">Industry</option>
                                 <option value="XLY">Consumer Discr.</option>
                                 <option value="XLB">Materials</option>
-                            </select> 
+                            </select>-->
+                            <select name="sector" data-bind="options: availableSectors, optionsText: 'fullname', value: sector"></select>
                         </div>
                     </div>
                 
