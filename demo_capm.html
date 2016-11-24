@@ -19,6 +19,34 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.2.0/cosmo/bootstrap.min.css">
         <!--<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">-->
         <!--<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>-->
+        <script>
+            function processData(allText) {
+                var allTextLines = allText.split(/\r\n|\n/);
+                var headers = allTextLines[0].split(',');
+                var lines = [];
+                for (var i = 0; i < allTextLines.length; i++) {
+                    var data = allTextLines[i].split(',');
+                    if (data.length == headers.length) {
+                        var tarr = [];
+                        for (var j = 0; j < headers.length; j++) {
+                            tarr.push(headers[j] + ":" + data[j]);
+                        }
+                        lines.push(tarr);
+                    }
+                }
+              alert(lines);
+            }
+            $(document).ready(function() {
+                $.ajax({
+                    type: "GET",
+                    url: "data/data_spdr_sectors.csv",
+                    dataType: "text",
+                    success: function(data) {
+                        processData(data);
+                    }
+                });
+            });
+        </script>
     
     </head>
  
