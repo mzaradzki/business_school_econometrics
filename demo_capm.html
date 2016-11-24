@@ -36,8 +36,8 @@
             var marketdata = null;
 
             function processData(allText) {
-                console.log('data loaded');
-                marketdata = csvParser(data);
+                console.log('csv data loaded');
+                marketdata = csvParser(allText);
                 var capmXs = [];
                 var ffXs = [];
                 for (var t=0; t<marketdata['Date'].length; t++) {
@@ -54,8 +54,8 @@
                     type: "GET",
                     url: "data/data_spdr_sectors.csv",
                     dataType: "text",
-                    success: function(data) {
-                        processData(data);
+                    success: function(allText) {
+                        processData(allText);
                     }
                 });
             });
