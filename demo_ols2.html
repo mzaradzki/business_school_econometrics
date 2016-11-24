@@ -144,34 +144,6 @@
                         //options: { observeChanges: true, throttle: 1000 },
                     };
                 }, this);
-                //
-                this.DynamicHistForecastData = ko.computed(function () {
-                    var arr5 = [];
-                    for (var i5=0; i5<100; i5++) {
-                        var sar = simAndReg(this.Xs(), this.intercept(), this.beta(), this.errstd());
-                        arr5.push( sar.regfun([this.newX()]) );
-                    }
-                    var bins5 = d3.histogram().thresholds(9)(arr5); //.domain([0,1])
-                    var labels5 = [];
-                    var data5 = [];
-                    for (var i5=0; i5<bins5.length; i5++) {
-                        labels5.push( 0.5*(bins5[i5].x0+bins5[i5].x1) );
-                        data5.push( bins5[i5].length/arr5.length );
-                    }
-                    return {
-                        type:'bar',
-                        data: { // data
-                            labels: labels5,
-                            datasets: [{
-                                label: 'forecasts',
-                                data: data5,
-                                backgroundColor: "#FF6384",
-                                hoverBackgroundColor: "#FF6384",
-                            }],
-                        },
-                        //options: { observeChanges: true, throttle: 1000 },
-                    };
-                }, this);
             }
         </script>
     
