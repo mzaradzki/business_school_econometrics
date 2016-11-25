@@ -294,8 +294,9 @@
                 <div class="panel-heading">Breusch-Godfrey Statistic</div>
                 <div class="panel-body">
                     <pre id="breuschgodfrey" class="shiny-text-output">
-<strong data-bind="text: 'BG(1) : ' + BreuschGodfrey(capmMR(),1).LM.toFixed(2) + ' p-val : ' + BreuschGodfrey(capmMR(),1).pval.toFixed(2)"></strong>
-<strong data-bind="text: 'BG(2) : ' + BreuschGodfrey(capmMR(),2).LM.toFixed(2) + ' p-val : ' + BreuschGodfrey(capmMR(),2).pval.toFixed(2)"></strong>
+<strong data-bind="text: 'BG(1) : ' + BreuschGodfrey(capmMR(),1).LM.toFixed(2) + ' p-val : ' + BreuschGodfrey(capmMR(),1).pval.toFixed(4)"></strong>
+<strong data-bind="text: 'BG(2) : ' + BreuschGodfrey(capmMR(),2).LM.toFixed(2) + ' p-val : ' + BreuschGodfrey(capmMR(),2).pval.toFixed(4)"></strong>
+<strong data-bind="text: 'BG(3) : ' + BreuschGodfrey(capmMR(),3).LM.toFixed(2) + ' p-val : ' + BreuschGodfrey(capmMR(),3).pval.toFixed(4)"></strong>
                     </pre>
                 </div>
                 <div class="panel-footer">As the DW test is limited to first-order auto-correlation we use BG test for higher order analysis</div>
