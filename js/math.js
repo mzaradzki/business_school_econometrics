@@ -69,12 +69,31 @@ var MultiRegression = function(Xs, Ys, addConstantToX) {
             addConstantToX:addConstantToX,
             beta:Beta,
             dof:dof,
+            regressors: A,
+            residuals:residuals,
             SSRes:SSRes, SSTot:SSTot, SSExp:SSExp,
             R2:R2,
             F:F, F_df1:Beta.length-1, F_df2:Ys.length-Beta.length, F_pval:1-jStat.centralF.cdf(F, Beta.length-1, Ys.length-Beta.length),
             stdErr:s, betaCov:BetaCovar,
             DW:DW,
         };
+}
+var BreuschGodfrey = function(MR, lags) {
+    console.log('WARNING : needs code review and testing')
+    var Xs = [];
+    var Ys = [];
+    for (var o=lags; o<MR.residuals.length; o++) {
+        var row = [];
+        for (var l=1; l<=lags; l++) {
+            row.push( residuals[o-l] );
+        }
+        Ys.push( residuals[o] );
+        Xs.push( row.concat(MR.regressors[o]) );
+    }
+    var auxMR = MultiRegression(Xs, Ys, false);
+    var LM = (Xs.length-lags) * auxMR.R2;
+    var pval = 1-jStat.chisquare.cdf(LM, lags);
+    return {LM:LM, pval:pval, dof:lags};
 }
 var testMultiRegression = function(addConstantToX) {
     var Xs = [[1,0], [1,0.5],[2,0],[-1,0],[1,-1],[1,2]];
