@@ -69,7 +69,7 @@ var MultiRegression = function(Xs, Ys, addConstantToX) {
             addConstantToX:addConstantToX,
             beta:Beta,
             dof:dof,
-            regressors: A,
+            regressors: fullXs,
             residuals:residuals,
             SSRes:SSRes, SSTot:SSTot, SSExp:SSExp,
             R2:R2,
@@ -85,9 +85,9 @@ var BreuschGodfrey = function(MR, lags) {
     for (var o=lags; o<MR.residuals.length; o++) {
         var row = [];
         for (var l=1; l<=lags; l++) {
-            row.push( residuals[o-l] );
+            row.push( MR.residuals[o-l] );
         }
-        Ys.push( residuals[o] );
+        Ys.push( MR.residuals[o] );
         Xs.push( row.concat(MR.regressors[o]) );
     }
     var auxMR = MultiRegression(Xs, Ys, false);
